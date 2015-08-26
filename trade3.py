@@ -6,6 +6,15 @@ from urllib import request
 from datetime import datetime
 
 log_filename = 'trade3.log'
+# в ly
+max_distance = 100
+# в ls
+max_distance_station_a = 200
+max_distance_station_b = 200
+# учитывать ли цены на товары с неизвестным спросом или предложением
+price_sd_status = 0
+# отклонение цены в большую сторону в процентах, при которой уже не будет рассматриваться спрос и предложение
+price_deviation = 5
 
 def clear_file(filename):
     f = open(filename, mode = 'w', encoding = 'utf-8')
@@ -38,11 +47,12 @@ class CacheData(object):
         self.station_price_url = 'http://www.davek.com.au/td/prices.asp'
         # очищаем лог файл и говорим о начале работы
         clear_file(log_filename)
-        logging('Begin work')
-        # получаем информацию о системах и станциях
+        logging('Begin create cache data')
+        # получаем информацию о системах, станциях и ценах
         self.get_systems()
         self.get_stations()
         self.get_price()
+        logging('End create cache data')
 
     def get_systems(self):
         logging('Begin load systems info')
@@ -206,7 +216,77 @@ class CacheData(object):
         f.close()
         logging( 'Finish load price data')
 
-cd = CacheData()
+    def calc_distance(self, system_a, system_b): 
 
-print(cd.cache_data['prices'])
+        return round((((float(cachedata[self.cd_sm][system_b][0]) - float(cachedata[self.cd_sm][system_a][0])) ** 2 + (float( cachedata[self.cd_sm][system_b][1]) - float(cachedata[self.cd_sm][system_a][1])) ** 2 + (float( cachedata[self.cd_sm][system_b][2]) - float(cachedata[self.cd_sm][system_a][2])) ** 2) ** 0.5), 2)
+
+class route(object):
+    """docstring for route"""
+    def __init__(self, system_a, system_b, distance):
+        super(route, self).__init__()
+
+        global max_distance_station_a
+        global max_distance_station_b
+        global price_sd_status = 0
+        global price_deviation = 5
+
+        self.system_a = system_a
+        self.system_b = system_b
+        #--
+        self.distance = distance
+        (self.station_a, self.station_b, \
+        self.product_a, self.product_b, \
+        self.profit_a, self.profit_b, \
+        self.stock_a, self.stock_a_status, self.demand_b, self.demand_b_status, \
+        self.stock_b, self.stock_b_status, self.demand_a, self.demand_a_status) = self.get_route_info()
+
+        self.profit = self.profit_a + self.profit_b
+
+    def get_route_info(self):
+        station_a = ''
+        station_b = ''
+        product_a = ''
+        product_b = ''
+        profit_a = 0
+        profit_b = 0
+
+
+
+    def get_string_view(self):
+        pass
+
+class TradeRoutes(object):
+    """docstring for TradeRoute"""
+    def __init__(self):
+        super(TradeRoutes, self).__init__()
+        #-- создаем объект кеша
+        self.cd = CacheData()
+        #-- переменные
+        self.cd_pr = 'prices'
+        self.price_system_array = list()
+        self.trade_route_cache = list()
+        global max_distance
+        #-- стоим наш объект
+        self.create_route_list()
+
+    def create_route_list(self):
+        logging('Begin create trade routes array')
+        # проходим по словарю кеша prices и првращаем его в массив
+        for system in self.cd.cache_data[self.cd_pr]:
+            self.price_system_array.append(system)
+        
+        while len(self.price_system_array) > 0:
+            # выдергиваем одну систему из массива и строим "отношения с остальными"
+            system_a = self.price_system_array.pop()
+            for system_b in self.price_system_array:
+                # проверяем на расстояние между системами
+                if self.cd.calc_distance(system_a, system_b) <= max_distance:
+                    # если проходит фильтр расстояния, то сохраняем маршрут
+                    self.trade_route_cache.append(route(system_a, system_b, self.cd.calc_distance(system_a, system_b)))
+        logging('End create trade routes array')
+
+
+
+
+#print(cd.cache_data['prices'])
 
