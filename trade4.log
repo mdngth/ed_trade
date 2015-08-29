@@ -1,0 +1,10 @@
+2015-08-30 01:53:24.090338 [INFO] Begin create cache data
+2015-08-30 01:53:24.092338 [INFO] Begin load systems info
+2015-08-30 01:53:24.317554 [INFO] Finish load systems info
+2015-08-30 01:53:24.319395 [INFO] Begin load stations info
+2015-08-30 01:53:28.072970 [INFO] Finish load stations info
+2015-08-30 01:53:28.074802 [INFO] Begin load price info
+2015-08-30 01:53:49.321024 [INFO] End load price info
+2015-08-30 01:53:49.323024 [INFO] Begin best route calculation
+2015-08-30 01:54:50.423894 [INFO] End best route calculation
+2015-08-30 01:54:50.429897 [INFO] End create cache data
